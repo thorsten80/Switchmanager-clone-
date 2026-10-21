@@ -1,0 +1,60 @@
+name: Aqara Climate Sensor W100 (TH-S04D)
+service: Zigbee2MQTT
+event_type: mqtt
+mqtt_topic_format: zigbee2mqtt/+
+info: >
+  Blueprint for the Aqara Climate Sensor W100 (TH-S04D) with 3 buttons:
+  upper (+), center, and lower (-). Each button supports single press,
+  double press, hold, and release.
+buttons:
+  - actions:
+      - title: press
+        conditions:
+          - key: action
+            value: single_plus
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_plus
+      - title: hold
+        conditions:
+          - key: action
+            value: hold_plus
+      - title: release
+        conditions:
+          - key: action
+            value: release_plus
+  - actions:
+      - title: press
+        conditions:
+          - key: action
+            value: single_center
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_center
+      - title: hold
+        conditions:
+          - key: action
+            value: hold_center
+      - title: release
+        conditions:
+          - key: action
+            value: release_center
+  - actions:
+      - title: press
+        conditions:
+          - key: action
+            value: single_minus
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_minus
+      - title: hold
+        conditions:
+          - key: action
+            value: hold_minus
+      - title: release
+        conditions:
+          - key: action
+            value: release_minus

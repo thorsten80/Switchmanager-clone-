@@ -1,0 +1,58 @@
+name: GE Cync Keypad Dimmer (CSWDMBLK5T1)
+service: Matter
+event_type: event_entity
+identifier_key: device_id
+info: Requires Switch Manager 5.0+. Identifier is the Home Assistant device ID.
+  Endpoint 2 is the top scene button; endpoint 3 is the second scene button.
+  Both support press, press 2x, hold, and hold release. Endpoint 1 is the
+  dimmable light. The center button and dim arrows control the local load
+  and do not emit button events.
+buttons:
+- x: 65
+  y: 101
+  width: 169
+  height: 54
+  conditions:
+  - key: endpoint
+    value: 2
+  actions:
+  - title: press
+    conditions:
+    - key: event_type
+      value: multi_press_1
+  - title: press 2x
+    conditions:
+    - key: event_type
+      value: multi_press_2
+  - title: hold
+    conditions:
+    - key: event_type
+      value: long_press
+  - title: hold (released)
+    conditions:
+    - key: event_type
+      value: long_release
+- x: 65
+  y: 158
+  width: 169
+  height: 53
+  conditions:
+  - key: endpoint
+    value: 3
+  actions:
+  - title: press
+    conditions:
+    - key: event_type
+      value: multi_press_1
+  - title: press 2x
+    conditions:
+    - key: event_type
+      value: multi_press_2
+  - title: hold
+    conditions:
+    - key: event_type
+      value: long_press
+  - title: hold (released)
+    conditions:
+    - key: event_type
+      value: long_release

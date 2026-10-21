@@ -1,0 +1,65 @@
+name: Sunricher Green Power 4 Button Dimmer (SR-ZGP2801K4-DIM-G2)
+service: Zigbee2MQTT
+event_type: mqtt
+mqtt_topic_format: zigbee2mqtt/+/action
+info: >
+  Sunricher SR-ZGP2801K4-DIM-G2-S battery-free Zigbee Green Power wall switch:
+  4 buttons (2-group dimming). Actions are published on the device's /action
+  sub-topic, so set the switch identifier to zigbee2mqtt/<friendly_name>/action.
+
+  Layout (matching the faceplate): top-left = ON (I), top-right = OFF (O),
+  bottom-left = brightness down, bottom-right = brightness up. On the dimming
+  buttons: press = single step, hold = continuous dim, hold (released) = stop.
+buttons:
+  - x: 16
+    y: 16
+    width: 126
+    height: 236
+    actions:
+      - title: press
+        conditions:
+          - key: payload
+            value: "on"
+  - x: 356
+    y: 16
+    width: 127
+    height: 236
+    actions:
+      - title: press
+        conditions:
+          - key: payload
+            value: "off"
+  - x: 16
+    y: 257
+    width: 126
+    height: 221
+    actions:
+      - title: press
+        conditions:
+          - key: payload
+            value: step_down_with_on_off
+      - title: hold
+        conditions:
+          - key: payload
+            value: move_down_with_on_off
+      - title: hold (released)
+        conditions:
+          - key: payload
+            value: level_control_stop
+  - x: 356
+    y: 257
+    width: 127
+    height: 221
+    actions:
+      - title: press
+        conditions:
+          - key: payload
+            value: step_up_with_on_off
+      - title: hold
+        conditions:
+          - key: payload
+            value: move_up_with_on_off
+      - title: hold (released)
+        conditions:
+          - key: payload
+            value: level_control_stop

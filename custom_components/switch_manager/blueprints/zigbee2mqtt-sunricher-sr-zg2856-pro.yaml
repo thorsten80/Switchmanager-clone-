@@ -1,0 +1,311 @@
+name: Sunricher 10 Button Remote (SR-ZG2856-Pro)
+service: Zigbee2MQTT
+event_type: mqtt
+mqtt_topic_format: zigbee2mqtt/+
+info: |
+    Sunricher SR-ZG2856-Pro 10-button remote / wall switch.
+
+    IMPORTANT: this blueprint listens on the device's MAIN topic (e.g. zigbee2mqtt/<friendly_name>),
+    NOT the /action sub-topic. The button identity is published only in the "action_buttons" field of
+    the full JSON payload, so the main topic is required. When configuring the switch, set the
+    identifier to the main topic (zigbee2mqtt/<friendly_name>) WITHOUT /action.
+
+    Each button supports: press (short_press), press 2x (double_press), hold and hold (released).
+
+    BUTTON MAPPING (5 rows, left = odd, right = even):
+      Left column:  k1  k3  k5  k7  k9
+      Right column: k2  k4  k6  k8  k10
+    Not every key/action combination has been verified on a real device yet. Check the mapping with
+    the live monitor (press a key and see which box lights up); if your firmware numbers the keys
+    differently, swap the action_buttons.0 values below.
+buttons:
+  - x: 17   # k1
+    y: 9
+    width: 82
+    height: 62
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k1
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k1
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k1
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k1
+  - x: 99   # k2
+    y: 9
+    width: 82
+    height: 62
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k2
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k2
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k2
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k2
+  - x: 17   # k3
+    y: 71
+    width: 82
+    height: 62
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k3
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k3
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k3
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k3
+  - x: 99   # k4
+    y: 71
+    width: 82
+    height: 62
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k4
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k4
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k4
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k4
+  - x: 17   # k5
+    y: 133
+    width: 82
+    height: 62
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k5
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k5
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k5
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k5
+  - x: 99   # k6
+    y: 133
+    width: 82
+    height: 62
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k6
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k6
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k6
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k6
+  - x: 17   # k7
+    y: 195
+    width: 82
+    height: 62
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k7
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k7
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k7
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k7
+  - x: 99   # k8
+    y: 195
+    width: 82
+    height: 62
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k8
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k8
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k8
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k8
+  - x: 17   # k9
+    y: 257
+    width: 82
+    height: 62
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k9
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k9
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k9
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k9
+  - x: 99   # k10
+    y: 257
+    width: 82
+    height: 62
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k10
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k10
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k10
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k10

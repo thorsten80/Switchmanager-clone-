@@ -1,0 +1,23 @@
+{
+  "domain": "switch_manager",
+  "name": "Switch Manager",
+  "after_dependencies": [
+    "mqtt"
+  ],
+  "codeowners": [
+    "@macpit"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "panel_custom",
+    "websocket_api",
+    "http",
+    "frontend",
+    "script"
+  ],
+  "documentation": "https://github.com/macpit/Home-Assistant-Switch-Manager",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/macpit/Home-Assistant-Switch-Manager/issues",
+  "requirements": [],
+  "version": "5.3.5"
+}

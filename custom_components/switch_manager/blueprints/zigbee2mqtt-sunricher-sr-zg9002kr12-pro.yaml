@@ -1,0 +1,412 @@
+name: Sunricher 12 Button Knob (SR-ZG9002KR12-Pro)
+service: Zigbee2MQTT
+event_type: mqtt
+mqtt_topic_format: zigbee2mqtt/+
+info: |
+    Sunricher SR-ZG9002KR12-Pro multifunction Zigbee panel: 12 push buttons plus a rotary knob.
+
+    IMPORTANT: this blueprint listens on the device's MAIN topic (e.g. zigbee2mqtt/<friendly_name>),
+    NOT the /action sub-topic. The button identity is published only in the "action_buttons" field of
+    the full JSON payload, so the main topic is required. When configuring the switch, set the
+    identifier to the main topic (zigbee2mqtt/<friendly_name>) WITHOUT /action.
+
+    Each button supports: press (short_press), press 2x (double_press), hold and hold (released).
+    The knob adds rotate left (anti_clockwise) / rotate right (clockwise). Rotation fires on every
+    step, so a single physical turn can trigger the rotate action several times.
+
+    BUTTON MAPPING (verify on your device via the live monitor - press a key and see which box lights up):
+      Left block, left column:  A=k1  B=k2  C=k3  power=k4
+      Left block, right column: D=k5  E=k6  F=k7  G=k8
+      Right number block:       1=k9  2=k11  3=k10  4=k12
+    If your firmware numbers them differently, just swap the action_buttons.0 values below.
+buttons:
+  # ===== Left block - left column (A, B, C, power) =====
+  - x: 38   # A = k1
+    y: 25
+    width: 57
+    height: 58
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k1
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k1
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k1
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k1
+  - x: 38   # B = k2
+    y: 90
+    width: 57
+    height: 58
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k2
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k2
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k2
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k2
+  - x: 38   # C = k3
+    y: 156
+    width: 57
+    height: 58
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k3
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k3
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k3
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k3
+  - x: 38   # power = k4
+    y: 222
+    width: 57
+    height: 58
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k4
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k4
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k4
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k4
+  # ===== Left block - right column (D, E, F, G) =====
+  - x: 99   # D = k5
+    y: 25
+    width: 58
+    height: 58
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k5
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k5
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k5
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k5
+  - x: 99   # E = k6
+    y: 90
+    width: 58
+    height: 58
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k6
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k6
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k6
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k6
+  - x: 99   # F = k7
+    y: 156
+    width: 58
+    height: 58
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k7
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k7
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k7
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k7
+  - x: 99   # G = k8
+    y: 222
+    width: 58
+    height: 58
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k8
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k8
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k8
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k8
+  # ===== Rotary knob (top right) =====
+  # No height => rendered as <circle cx=x cy=y r=width>. Center it over the
+  # physical knob (top-right) with a radius that clears the side/number buttons.
+  - x: 231
+    y: 88
+    width: 62
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: knob
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: knob
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: knob
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: knob
+      - title: rotate left
+        conditions:
+          - key: action
+            value: anti_clockwise_rotation
+      - title: rotate right
+        conditions:
+          - key: action
+            value: clockwise_rotation
+  # ===== Right number block (1, 2, 3, 4) =====
+  - x: 166   # 1 = k9
+    y: 156
+    width: 62
+    height: 58
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k9
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k9
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k9
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k9
+  - x: 234   # 2 = k11
+    y: 156
+    width: 62
+    height: 58
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k11
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k11
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k11
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k11
+  - x: 166   # 3 = k10
+    y: 222
+    width: 62
+    height: 58
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k10
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k10
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k10
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k10
+  - x: 234   # 4 = k12
+    y: 222
+    width: 62
+    height: 58
+    actions:
+      - title: press
+        conditions:
+          - key: action
+            value: short_press
+          - key: action_buttons.0
+            value: k12
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double_press
+          - key: action_buttons.0
+            value: k12
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+          - key: action_buttons.0
+            value: k12
+      - title: hold (released)
+        conditions:
+          - key: action
+            value: hold_released
+          - key: action_buttons.0
+            value: k12

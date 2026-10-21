@@ -1,0 +1,66 @@
+# State topic mode (operation_mode = command_mode or color_temperature)
+# https://www.zigbee2mqtt.io/devices/ZG-101ZD.html
+
+name: Moes ZG-101ZD (TS004F) - State topic
+service: Zigbee2MQTT
+event_type: mqtt
+mqtt_topic_format: zigbee2mqtt/+
+info: >
+  Set operation_mode in Zigbee2MQTT to "command_mode" or "color_temperature"
+  to use this blueprint. The device publishes its action to the state topic
+  as a JSON payload with an "action" key. Use the event blueprint instead
+  if operation_mode is set to "event".
+buttons:
+  - actions:
+      - title: press
+        conditions:
+          - key: action
+            value: single
+      - title: press 2x
+        conditions:
+          - key: action
+            value: double
+      - title: hold
+        conditions:
+          - key: action
+            value: hold
+      - title: toggle
+        conditions:
+          - key: action
+            value: toggle
+      - title: rotate right
+        conditions:
+          - key: action
+            value: rotate_right
+      - title: rotate left
+        conditions:
+          - key: action
+            value: rotate_left
+      - title: brightness step up
+        conditions:
+          - key: action
+            value: brightness_step_up
+      - title: brightness step down
+        conditions:
+          - key: action
+            value: brightness_step_down
+      - title: color temperature step up
+        conditions:
+          - key: action
+            value: color_temperature_step_up
+      - title: color temperature step down
+        conditions:
+          - key: action
+            value: color_temperature_step_down
+      - title: saturation move
+        conditions:
+          - key: action
+            value: saturation_move
+      - title: hue move
+        conditions:
+          - key: action
+            value: hue_move
+      - title: hue stop
+        conditions:
+          - key: action
+            value: hue_stop

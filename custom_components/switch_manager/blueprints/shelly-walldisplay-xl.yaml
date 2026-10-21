@@ -1,0 +1,56 @@
+name: Shelly Wall Display XL
+service: Shelly
+event_type: shelly.click
+identifier_key: device
+buttons:
+  - x: 685
+    y: 11
+    width: 84
+    height: 106
+    conditions:
+      - key: channel
+        value: 2
+    actions:
+      - title: press
+        conditions:
+          - key: click_type
+            value: single_push
+
+  - x: 685
+    y: 117
+    width: 84
+    height: 106
+    conditions:
+      - key: channel
+        value: 3
+    actions:
+      - title: press
+        conditions:
+          - key: click_type
+            value: single_push
+
+  - x: 685
+    y: 226
+    width: 84
+    height: 106
+    conditions:
+      - key: channel
+        value: 4
+    actions:
+      - title: press
+        conditions:
+          - key: click_type
+            value: single_push
+
+  - x: 685
+    y: 332
+    width: 84
+    height: 106
+    conditions:
+      - key: channel
+        value: 5
+    actions:
+      - title: press
+        conditions:
+          - key: click_type
+            value: single_push
