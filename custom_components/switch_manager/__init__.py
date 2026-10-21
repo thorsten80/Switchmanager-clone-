@@ -7,6 +7,7 @@ from .const import (
     CONF_SWITCH_CONFIGS,
     CONF_MANAGED_SWITCHES,
     CONF_STORE,
+    CONF_UNLOADED,
     LOGGER    
 )
 from .store import SwitchManagerStore
@@ -17,6 +18,7 @@ from .schema import BLUEPRINT_MQTT_SCHEMA, BLUEPRINT_EVENT_SCHEMA, SERVICE_SET_V
 from .connections import async_setup_connections
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.config import format_schema_error
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.typing import ConfigType
 
@@ -41,21 +43,13 @@ async def async_setup( hass: HomeAssistant, config: ConfigType ):
     await async_migrate( hass, is_dev )
     
     async def reload_all( call ):
-        for switch_id in hass.data[DOMAIN][CONF_MANAGED_SWITCHES]:
-            hass.data[DOMAIN][CONF_MANAGED_SWITCHES][switch_id].unload()
-        hass.data[DOMAIN][CONF_BLUEPRINTS] = {}
-        hass.data[DOMAIN][CONF_MANAGED_SWITCHES] = {}
-
-        await hass.data[DOMAIN][CONF_STORE].load()
-        await _init_blueprints(hass)
-        await _init_switch_configs(hass)
-        await async_bind_blueprint_images(hass)
+        await async_reload_switches( hass )
 
     @callback
     def switch_merge_variables( call ):
         switch = _get_switch_config(hass, str(call.data.get('switch_id')))
         if not switch:
-            raise ValueError(f"Switch id {call.data.get('switch_id')} does not exist")
+            raise ServiceValidationError(f"Switch id {call.data.get('switch_id')} does not exist")
         switch.mergeVariables( call.data.get('variables') )
 
     await _init_blueprints(hass)
@@ -68,6 +62,10 @@ async def async_setup( hass: HomeAssistant, config: ConfigType ):
     return True
 
 async def async_setup_entry( hass, config_entry ):
+    if hass.data[DOMAIN].pop(CONF_UNLOADED, False):
+        # Unloading the entry (e.g. "Reload" on the integrations page) tore every
+        # switch down, so bring them back or no button works until a restart.
+        await async_reload_switches( hass )
     await async_setup_view(hass)
     await async_setup_connections( hass )
 
@@ -79,7 +77,22 @@ async def async_unload_entry( hass: HomeAssistant, config_entry ):
     async_remove_view( hass )
     for switch_id in hass.data[DOMAIN].get(CONF_MANAGED_SWITCHES, {}):
         hass.data[DOMAIN][CONF_MANAGED_SWITCHES][switch_id].unload()
+    hass.data[DOMAIN][CONF_UNLOADED] = True
     return True
+
+async def async_reload_switches( hass: HomeAssistant ):
+    """Rebuild blueprints and switches from disk, dropping the running ones."""
+    for switch_id in hass.data[DOMAIN][CONF_MANAGED_SWITCHES]:
+        hass.data[DOMAIN][CONF_MANAGED_SWITCHES][switch_id].unload()
+        # Raised again below if the switch still doesn't fit its blueprint
+        ir.async_delete_issue(hass, DOMAIN, f"switch_{switch_id}_mismatch")
+    hass.data[DOMAIN][CONF_BLUEPRINTS] = {}
+    hass.data[DOMAIN][CONF_MANAGED_SWITCHES] = {}
+
+    await hass.data[DOMAIN][CONF_STORE].load()
+    await _init_blueprints(hass)
+    await _init_switch_configs(hass)
+    await async_bind_blueprint_images(hass)
 
 async def async_migrate( hass, in_dev ):
     store = hass.data[DOMAIN][CONF_STORE]
@@ -96,6 +109,8 @@ async def _init_blueprints( hass: HomeAssistant ):
     blueprints = hass.data[DOMAIN][CONF_BLUEPRINTS] = {}
     for config in await load_blueprints(hass):
         try:
+            if not isinstance(config.get('data'), dict):
+                raise vol.Invalid('blueprint is empty or not a mapping')
             c_validated = BLUEPRINT_MQTT_SCHEMA(config.get('data')) if config.get('data').get('event_type') == 'mqtt' else BLUEPRINT_EVENT_SCHEMA(config.get('data'))
         except vol.Invalid as ex:
             LOGGER.error(format_schema_error(hass, ex, f"{DOMAIN} {CONF_BLUEPRINTS}({config.get('id')})", config))
@@ -105,7 +120,9 @@ async def _init_blueprints( hass: HomeAssistant ):
             if button.get('x') or button.get('y') or button.get('width') or button.get('height') or button.get('d'):
                 LOGGER.error(f"{DOMAIN} {CONF_BLUEPRINTS}({config.get('id')}) Single button blueprints should not have x, y, width, height or d")
                 continue
-        blueprints[config.get('id')] = models.Blueprint(hass, config.get('id'), c_validated, config.get('has_image'))
+        blueprint = models.Blueprint(hass, config.get('id'), c_validated, config.get('has_image'))
+        blueprint.image_path = config.get('image_path')
+        blueprints[config.get('id')] = blueprint
 
 
 async def _init_switch_configs( hass: HomeAssistant ):

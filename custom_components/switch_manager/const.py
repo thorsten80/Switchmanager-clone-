@@ -12,6 +12,7 @@ PANEL_URL = "/switch_manager_panel.js"
 PANEL_URL_PATH = "switch_manager"
 
 CONF_STATIC_PATHS = 'static_paths'
+CONF_UNLOADED = 'unloaded'
 
 BLUEPRINTS_FOLDER = 'blueprints'
 

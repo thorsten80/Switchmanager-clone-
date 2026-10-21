@@ -3,6 +3,7 @@ from __future__ import annotations
 from .const import LOGGER
 from .models import ManagedSwitchConfig
 import attr
+import copy
 
 from homeassistant.helpers.storage import Store
 
@@ -21,8 +22,23 @@ class SwitchManagerManagedSwitchData:
     buttons = attr.ib(type=list, default=[])
 
     def set_from_managed_switch_config( self, config: ManagedSwitchConfig ):
-        self.__dict__.update(config.as_dict())      
-        self.blueprint = config.blueprint.id
+        # Take a detached copy of the persisted fields only. Keeping references to the
+        # live objects meant later changes (variables merged by set_variables, runtime
+        # state) were written out whenever any other switch got saved.
+        self.name = config.name
+        self.enabled = config.enabled
+        self.blueprint = config.blueprint.id if config.valid_blueprint else config.blueprint
+        self.identifier = config.identifier
+        self.variables = copy.deepcopy(config.saved_variables)
+        self.rotate = config.rotate
+        if config.valid_blueprint:
+            self.buttons = [
+                { 'actions': [ copy.deepcopy(action.as_dict()) for action in button.actions ] }
+                for button in config.buttons
+            ]
+        else:
+            # Nothing was built without a blueprint, store what was loaded unchanged
+            self.buttons = copy.deepcopy(config.buttons_config)
 
     @classmethod
     def from_dict(cls, data):
@@ -88,12 +104,11 @@ class SwitchManagerStore:
         return self.data.asdict()
 
     def get_available_id( self ) -> str:
-        if not any(self.data.managed_switches):
-            return '0'            
-        return str( int(list(self.data.managed_switches.keys())[-1]) + 1 );
+        ids = [ int(_id) for _id in self.data.managed_switches if str(_id).isdigit() ]
+        return str( max(ids) + 1 ) if ids else '0'
             
     async def set_managed_switch( self, config_data: ManagedSwitchConfig ):        
-        config = self.data.managed_switches.get(int(config_data.id), SwitchManagerManagedSwitchData())
+        config = SwitchManagerManagedSwitchData()
         config.set_from_managed_switch_config( config_data )
 
         self.data.managed_switches[config_data.id] = config

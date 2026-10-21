@@ -54,7 +54,7 @@ async def async_bind_blueprint_images(hass: HomeAssistant):
     await _async_register_static_paths(hass, [
         StaticPathConfig(
             f'/assets/{DOMAIN}/{key}.png',
-            hass.config.path(f"{BLUEPRINTS_FOLDER}/{DOMAIN}/{key}.png"),
+            blueprints[key].image_path or hass.config.path(f"{BLUEPRINTS_FOLDER}/{DOMAIN}/{key}.png"),
             True
         )
         for key in blueprints if blueprints[key].has_image

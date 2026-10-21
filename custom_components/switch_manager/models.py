@@ -5,8 +5,9 @@ import copy
 import asyncio
 from .const import DOMAIN, LOGGER, LOOP_MAX_SECONDS, LOOP_INTERVAL_DEFAULT, ZIGBEE2MQTT_DEFAULT_BASE_TOPIC
 from .helpers import format_mqtt_message, get_val_from_str
-from homeassistant.core import HomeAssistant, Context, callback, Event
-from homeassistant.const import EVENT_STATE_CHANGED, STATE_UNAVAILABLE, STATE_UNKNOWN
+import voluptuous as vol
+from homeassistant.core import HomeAssistant, Context, CoreState, callback, Event
+from homeassistant.const import EVENT_HOMEASSISTANT_STARTED, EVENT_STATE_CHANGED, STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.helpers import entity_registry as er, device_registry as dr
 from homeassistant.helpers.script import Script, async_validate_actions_config, DEFAULT_SCRIPT_MODE
 from homeassistant.helpers.condition import async_template as template_condition
@@ -56,6 +57,11 @@ def format_event_entity_state( hass: HomeAssistant, event: Event ) -> dict | Non
     if new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN) or old_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
         return None
     if new_state.attributes.get('event_type') is None:
+        return None
+    # The state is the timestamp of the last press, so it changes on every press.
+    # An unchanged state is an attribute only update (entity renamed, integration
+    # reloaded, ...) and would otherwise replay the last press.
+    if new_state.state == old_state.state:
         return None
 
     entity_registry = er.async_get(hass)
@@ -333,6 +339,7 @@ class Blueprint:
         self.id = str(_id)
         self.name = config.get('name')
         self.has_image = has_image
+        self.image_path: str | None = None
         self.service = config.get('service')
         self.event_type = config.get('event_type')
         self.is_mqtt = self.event_type == 'mqtt'
@@ -429,6 +436,7 @@ class Blueprint:
     def as_dict(self):
         res = self.__dict__.copy()
         res.pop('_hass')
+        res.pop('image_path')
         if isinstance(self.conditions, Template):
             res['conditions'] = self.conditions.template
         return res
@@ -547,6 +555,7 @@ class ManagedSwitchConfigButtonAction:
         self._loop_stop = asyncio.Event()
         self._loop_task: asyncio.Task = None
         self._loop_deadline = 0.0
+        self._unloaded = False
         hass.async_create_task( self.init_script() )
 
     @property
@@ -599,8 +608,41 @@ class ManagedSwitchConfigButtonAction:
             )
 
     async def init_script( self ):
-        if self.active:
-            self.script = await self._make_script( self.sequence )
+        if not self.active:
+            return
+        try:
+            script = await self._make_script( self.sequence )
+        except Exception as err:
+            if self._hass.state is not CoreState.running:
+                # Integrations the sequence relies on (device actions, ...) may not be
+                # set up yet while Home Assistant boots, so try again once it has.
+                LOGGER.debug(f"switch:{self.switch_id} button:{self.button_index} action:{self.index} sequence not valid yet, retrying after startup: {err}")
+                self._hass.bus.async_listen_once( EVENT_HOMEASSISTANT_STARTED, self._async_retry_init_script )
+                return
+            # Used to vanish as an unhandled task exception, leaving a dead button
+            LOGGER.error(f"switch:{self.switch_id} button:{self.button_index} action:{self.index} ({self.blueprint.title}) has an invalid sequence and will not run: {err}")
+            return
+        if self._unloaded or not self.active:
+            # Replaced or deactivated while the script was being built
+            if hasattr( script, 'async_unload' ):
+                await script.async_unload()
+            return
+        self.script = script
+
+    async def _async_retry_init_script( self, event: Event ):
+        if not self._unloaded and self.script is None:
+            await self.init_script()
+
+    def unload( self ):
+        """Stop and discard the script, also one that is still being built."""
+        self._unloaded = True
+        self.stop_loop()
+        if self.script:
+            # Script.async_unload() only exists from HA 2026.5 onwards; on older
+            # cores dropping the reference is all the teardown there is.
+            if hasattr( self.script, 'async_unload' ):
+                self._hass.async_create_task( self.script.async_unload() )
+            self.script = None
 
     def scale_factor( self, data ) -> int:
         """How often this action should apply for the incoming event (1 = normal)."""
@@ -712,6 +754,27 @@ class ManagedSwitchConfigButton:
     def asdict(self):
         return self.as_dict()
 
+async def async_validate_buttons_config( hass: HomeAssistant, blueprint, buttons_config ):
+    """Validate every configured sequence the way the switch will build it.
+
+    Raises vol.Invalid naming the button and action, so saving a broken action fails
+    in the editor instead of silently leaving a button that does nothing.
+    """
+    for button_index, button in enumerate(buttons_config or []):
+        for action_index, action in enumerate(button.get('actions') or []):
+            if not action.get('sequence'):
+                continue
+            try:
+                await async_validate_actions_config( hass, cv.SCRIPT_SCHEMA(action['sequence']) )
+            except (vol.Invalid, HomeAssistantError) as err:
+                title = None
+                if isinstance(blueprint, Blueprint) and button_index < len(blueprint.buttons):
+                    actions = blueprint.buttons[button_index].actions
+                    if action_index < len(actions):
+                        title = actions[action_index].title
+                name = f'"{title}"' if title else str(action_index + 1)
+                raise vol.Invalid(f"Button {button_index + 1}, action {name}: {err}") from err
+
 def blueprint_only_grew( blueprint, buttons_config ) -> bool:
     """Did the blueprint only gain buttons/actions compared to what is configured?
 
@@ -756,9 +819,10 @@ class ManagedSwitchConfig:
         self.blueprint: Blueprint
         self.valid_blueprint: bool
         self.is_mismatch: bool
-        self.variables: dict = config.get('variables')
+        self._set_variables( config.get('variables') )
         self.rotate: int = config.get('rotate', 0)
         self.buttons: list[ManagedSwitchConfigButton] = []
+        self.buttons_config: list = config.get('buttons') or []
         self.enabled: bool = config.get('enabled', True)
         self.button_last_state: list = []
         self.buildButtons( self.setBlueprint( blueprint, config.get('buttons') ) )
@@ -768,10 +832,16 @@ class ManagedSwitchConfig:
     def update( self, config ):
         self.name = config.get('name')
         self.identifier = config.get('identifier')
-        self.variables: dict = config.get('variables')
+        self._set_variables( config.get('variables') )
         self.rotate: int = config.get('rotate', 0)
         self.button_last_state = []
         self.buildButtons( config.get('buttons') )
+
+    def _set_variables( self, variables ):
+        # set_variables only changes the running switch; what gets stored is what the
+        # user saved. Both are copies so neither leaks into the other or into the store.
+        self.saved_variables: dict = copy.deepcopy(variables)
+        self.variables: dict = copy.deepcopy(variables)
         
     def setBlueprint( self, blueprint: Blueprint, buttons_config = None ):
         self.blueprint = blueprint
@@ -807,15 +877,18 @@ class ManagedSwitchConfig:
 
     def mergeVariables( self, data ):
         if not self.variables:
-            self.variables = data
+            self.variables = copy.deepcopy(data)
         else:
-            self.variables.update(data)
+            self.variables.update(copy.deepcopy(data))
 
     def buildButtons( self, buttons_config ):
         # Existing scripts are about to be replaced by freshly built ones, so fully
         # unload (not just stop) the old ones to release their resources.
         self.unload_scripts()
         self.buttons = []
+        # Kept so a switch whose blueprint failed to load doesn't lose its sequences
+        # when it gets stored again (e.g. by toggling it)
+        self.buttons_config = buttons_config or []
         # No blueprint was loaded and is a string
         if not self.valid_blueprint:
             return
@@ -915,13 +988,7 @@ class ManagedSwitchConfig:
     def unload_scripts( self ):
         for button in self.buttons:
             for action in button.actions:
-                action.stop_loop()
-                if action.script:
-                    # Script.async_unload() only exists from HA 2026.5 onwards; on older
-                    # cores dropping the reference is all the teardown there is.
-                    if hasattr( action.script, 'async_unload' ):
-                        self._hass.async_create_task( action.script.async_unload() )
-                    action.script = None
+                action.unload()
                     
     def setEnabled( self, value: bool ):
         self.enabled = value
@@ -945,6 +1012,8 @@ class ManagedSwitchConfig:
         res.pop('_hass')
         res.pop('_event_listeners')
         res.pop('listeners')
+        res.pop('saved_variables')
+        res.pop('buttons_config')
         return res
 
     # attr dict

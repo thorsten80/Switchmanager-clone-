@@ -66,17 +66,29 @@ async def load_blueprints( hass ):
 
     results = []
     def doFiles():
+        seen = {}
         for f in files:
+            _id = os.path.splitext(os.path.basename(f))[0]
+            if _id in seen:
+                # The file name is the blueprint id, a second one would silently
+                # replace the first
+                LOGGER.error(f"{DOMAIN} blueprint {f} skipped, {seen[_id]} already uses the id {_id}")
+                continue
             try:
                 data = load_yaml(f)
             except HomeAssistantError as ex:
                 LOGGER.error(str(ex))
                 continue
+            if not isinstance(data, dict):
+                LOGGER.error(f"{DOMAIN} blueprint {f} skipped, it does not contain a mapping")
+                continue
+            seen[_id] = f
+            # The image sits next to the YAML, which may be in a sub folder
+            image_path = os.path.splitext(f)[0] + '.png'
             results.append({
-                'id': os.path.splitext(os.path.basename(f))[0],
-                'has_image': os.path.exists(
-                    os.path.join(folder, os.path.splitext(os.path.basename(f))[0] + '.png')
-                ),
+                'id': _id,
+                'has_image': os.path.exists(image_path),
+                'image_path': image_path,
                 'data': data        
             })
     

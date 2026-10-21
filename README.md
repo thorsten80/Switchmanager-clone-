@@ -1,6 +1,20 @@
 # Home Assistant Switch Manager
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://my.home-assistant.io/redirect/hacs_repository/?owner=macpit&repository=Home-Assistant-Switch-Manager&category=integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://my.home-assistant.io/redirect/hacs_repository/?owner=thorsten80&repository=Switchmanager-clone-&category=integration)
+
+> **Über diesen Klon:** Basis ist [macpit/Home-Assistant-Switch-Manager](https://github.com/macpit/Home-Assistant-Switch-Manager) v5.3.5 (Commit `bbd7c24`), der offizielle Nachfolger des eingestellten Originals von [@Sian-Lee-SA](https://github.com/Sian-Lee-SA). Lizenz GPL-3.0, Copyright der ursprünglichen Autoren bleibt bestehen.
+>
+> **Zusätzliche Fehlerbehebungen in 5.3.5.1:**
+> - „Neu laden“ der Integration (Einstellungen → Geräte & Dienste) hat alle Schalter abgeschaltet, bis HA neu gestartet wurde.
+> - Ungültige Aktionen wurden ohne Fehlermeldung gespeichert und die Taste reagierte dann einfach nicht. Speichern zeigt jetzt den Fehler mit Taste und Aktion an, beim Laden steht er im Log.
+> - Aktionen, deren Prüfung beim HA-Start scheitert, weil benötigte Integrationen noch nicht bereit sind, werden nach dem Start erneut aufgebaut.
+> - Mit `switch_manager.set_variables` gesetzte Variablen wurden mitgespeichert, sobald irgendein anderer Schalter gespeichert wurde (dokumentiert ist: nur beim Speichern dieses Schalters).
+> - Hat man einen Schalter aktiviert/deaktiviert, dessen Blueprint nicht geladen werden konnte, wurden seine Tasten-Konfigurationen gelöscht.
+> - Event-Entitäten (Matter, Hue, Homematic …): reine Attributänderungen, z. B. das Umbenennen der Entität, haben die letzte Aktion erneut ausgelöst.
+> - Ein Panel-Tab, der auf einen inzwischen gelöschten Schalter zeigt, führte zu Abstürzen im Backend statt zu einer Fehlermeldung. Gleiches gilt für „Kopieren von“ bei Schaltern ohne geladenen Blueprint.
+> - „Run action“ hat bei jedem Klick ein Skript-Objekt zurückgelassen.
+> - Neue Schalter-IDs werden aus der höchsten vorhandenen ID berechnet statt aus der zuletzt gespeicherten.
+> - Blueprint-Bilder in Unterordnern von `blueprints/switch_manager` werden gefunden. Doppelte Blueprint-Dateinamen werden gemeldet, statt sich still zu überschreiben.
 
 [![switch_manager_release](https://img.shields.io/github/v/release/macpit/Home-Assistant-Switch-Manager?style=flat-square&color=41bdf5)](https://github.com/macpit/Home-Assistant-Switch-Manager/releases/latest) [![switch_manager_stars](https://img.shields.io/github/stars/macpit/Home-Assistant-Switch-Manager?style=flat-square&color=41bdf5)](https://github.com/macpit/Home-Assistant-Switch-Manager/stargazers) [![switch_manager_contributors](https://img.shields.io/github/contributors/macpit/Home-Assistant-Switch-Manager?style=flat-square&color=41bdf5)](https://github.com/macpit/Home-Assistant-Switch-Manager)
 
